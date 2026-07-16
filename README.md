@@ -1,4 +1,4 @@
-# Receta
+# Hello Dolly
 
 A family cookbook. Log in, browse recipes, add your own.
 

@@ -1,7 +1,7 @@
-import Link from "next/link"
-import { BookOpen, Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { SignOutButton } from "@/components/sign-out-button"
+import Link from "next/link";
+import { BookOpen, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { SignOutButton } from "@/components/sign-out-button";
 
 export default function Home() {
   return (
@@ -42,5 +42,5 @@ export default function Home() {
         </div>
       </div>
     </main>
-  )
+  );
 }

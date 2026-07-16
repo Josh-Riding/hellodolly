@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Receta",
+  title: "Hello Dolly",
   description: "The family recipe box.",
 };
 
