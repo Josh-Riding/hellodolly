@@ -7,6 +7,9 @@ import { cn } from "@/lib/utils"
 
 type ComboInputProps = {
   id?: string
+  /** Enter pressed without picking a suggestion */
+  onEnter?: () => void
+  enterKeyHint?: React.ComponentProps<"input">["enterKeyHint"]
   value: string
   onChange: (value: string) => void
   suggestions?: string[]
@@ -17,6 +20,8 @@ type ComboInputProps = {
 // Free-text input with a styled suggestion list (single value; see TagInput for multi).
 function ComboInput({
   id,
+  onEnter,
+  enterKeyHint,
   value,
   onChange,
   suggestions = [],
@@ -53,6 +58,10 @@ function ComboInput({
     } else if (e.key === "Enter" && open && highlight >= 0 && highlight < filtered.length) {
       e.preventDefault()
       pick(filtered[highlight])
+    } else if (e.key === "Enter" && onEnter && !e.nativeEvent.isComposing) {
+      e.preventDefault()
+      setOpen(false)
+      onEnter()
     } else if (e.key === "Escape") {
       setOpen(false)
     }
@@ -62,6 +71,7 @@ function ComboInput({
     <div className={cn("relative", className)}>
       <Input
         id={id}
+        enterKeyHint={enterKeyHint}
         type="text"
         value={value}
         placeholder={placeholder}
