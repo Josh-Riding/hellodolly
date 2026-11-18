@@ -4,7 +4,7 @@ import { useState, useMemo } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { ChefHat, Search } from "lucide-react"
+import { ChefHat, Search, Star } from "lucide-react"
 import type { Recipe } from "@/db/schema"
 const CATEGORIES = [
   "All",
@@ -24,7 +24,15 @@ type ActiveCategory = (typeof CATEGORIES)[number]
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
 
 
-export function RecipesBrowser({ recipes }: { recipes: Recipe[] }) {
+export function RecipesBrowser({
+  recipes,
+  favoriteIds,
+}: {
+  recipes: Recipe[]
+  favoriteIds: string[]
+}) {
+  const favorites = useMemo(() => new Set(favoriteIds), [favoriteIds])
+  const [favoritesOnly, setFavoritesOnly] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [activeCategory, setActiveCategory] = useState<ActiveCategory>("All")
   const [activeKitchen, setActiveKitchen] = useState<string | null>(null)
@@ -45,9 +53,10 @@ export function RecipesBrowser({ recipes }: { recipes: Recipe[] }) {
       const categoryMatch =
         activeCategory === "All" || r.category === activeCategory
       const kitchenMatch = activeKitchen === null || r.kitchen === activeKitchen
-      return matchesSearch && categoryMatch && kitchenMatch
+      const favoriteMatch = !favoritesOnly || favorites.has(r.id)
+      return matchesSearch && categoryMatch && kitchenMatch && favoriteMatch
     })
-  }, [recipes, searchQuery, activeCategory, activeKitchen])
+  }, [recipes, searchQuery, activeCategory, activeKitchen, favoritesOnly, favorites])
 
   const grouped = useMemo(() => {
     const map = new Map<string, Recipe[]>()
@@ -89,6 +98,15 @@ export function RecipesBrowser({ recipes }: { recipes: Recipe[] }) {
 
         {/* Category pills */}
         <div className="flex flex-wrap gap-2">
+          <button onClick={() => setFavoritesOnly((f) => !f)} aria-pressed={favoritesOnly}>
+            <Badge
+              variant={favoritesOnly ? "default" : "outline"}
+              className="cursor-pointer select-none gap-1 transition-colors"
+            >
+              <Star className={favoritesOnly ? "size-3 fill-current" : "size-3"} />
+              Favorites
+            </Badge>
+          </button>
           {CATEGORIES.map((cat) => (
             <button key={cat} onClick={() => setActiveCategory(cat)}>
               <Badge
@@ -144,8 +162,16 @@ export function RecipesBrowser({ recipes }: { recipes: Recipe[] }) {
                         href={`/recipe/${recipe.slug}`}
                         className="group flex items-center justify-between rounded-md px-1 py-1.5 text-sm transition-colors hover:text-primary"
                       >
-                        <span className="underline-offset-4 group-hover:underline">
-                          {recipe.title}
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className="underline-offset-4 group-hover:underline">
+                            {recipe.title}
+                          </span>
+                          {favorites.has(recipe.id) && (
+                            <Star
+                              className="size-3.5 fill-amber-400 text-amber-400"
+                              aria-label="Favorite"
+                            />
+                          )}
                         </span>
                         <span className="flex shrink-0 items-center gap-2">
                           {recipe.kitchen && (

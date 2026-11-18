@@ -1,8 +1,8 @@
 import { z } from "zod"
-import { asc, eq, sql } from "drizzle-orm"
+import { and, asc, eq, sql } from "drizzle-orm"
 import { router, protectedProcedure } from "../trpc"
 import { db } from "@/db"
-import { recipes } from "@/db/schema"
+import { favorites, recipes } from "@/db/schema"
 import { cleanRecipe } from "@/lib/clean-recipe"
 
 function slugify(title: string): string {
@@ -119,6 +119,32 @@ export const recipeRouter = router({
     )
     return (rows as unknown as { tag: string }[]).map((r) => r.tag)
   }),
+
+  // Recipe ids the current user has starred.
+  favoriteIds: protectedProcedure.query(async ({ ctx }) => {
+    const rows = await db
+      .select({ recipeId: favorites.recipeId })
+      .from(favorites)
+      .where(eq(favorites.userId, ctx.session.user.id))
+    return rows.map((r) => r.recipeId)
+  }),
+
+  setFavorite: protectedProcedure
+    .input(z.object({ recipeId: z.string().uuid(), favorite: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id
+      if (input.favorite) {
+        await db
+          .insert(favorites)
+          .values({ userId, recipeId: input.recipeId })
+          .onConflictDoNothing()
+      } else {
+        await db
+          .delete(favorites)
+          .where(and(eq(favorites.userId, userId), eq(favorites.recipeId, input.recipeId)))
+      }
+      return { recipeId: input.recipeId, favorite: input.favorite }
+    }),
 
   kitchenList: protectedProcedure.query(async () => {
     const rows = await db.execute(

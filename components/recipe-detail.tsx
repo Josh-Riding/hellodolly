@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator"
 import { TagInput } from "@/components/ui/tag-input"
 import { ComboInput } from "@/components/ui/combo-input"
 import { WakeLockButton } from "@/components/wake-lock-button"
+import { FavoriteButton } from "@/components/favorite-button"
 import {
   Select,
   SelectContent,
@@ -52,7 +53,13 @@ import type { Recipe, IngredientGroup, Ingredient } from "@/db/schema"
 const emptyIngredient = (): Ingredient => ({ amount: "", ingredient: "" })
 const emptyGroup = (): IngredientGroup => ({ name: "", items: [emptyIngredient()] })
 
-export function RecipeDetail({ recipe: initialRecipe }: { recipe: Recipe }) {
+export function RecipeDetail({
+  recipe: initialRecipe,
+  initialFavorite,
+}: {
+  recipe: Recipe
+  initialFavorite: boolean
+}) {
   const router = useRouter()
   const [localRecipe, setLocalRecipe] = useState(initialRecipe)
   const [isEditing, setIsEditing] = useState(false)
@@ -233,6 +240,7 @@ export function RecipeDetail({ recipe: initialRecipe }: { recipe: Recipe }) {
               )}
             </div>
             <div className="flex shrink-0 flex-wrap justify-end gap-2">
+              <FavoriteButton recipeId={localRecipe.id} initialFavorite={initialFavorite} />
               <WakeLockButton />
               <Button variant="outline" size="sm" onClick={enterEditMode}>
                 <Pencil className="size-3.5" />

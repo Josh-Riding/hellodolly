@@ -13,5 +13,7 @@ export default async function RecipePage({
 
   if (!recipe) notFound()
 
-  return <RecipeDetail recipe={recipe} />
+  const favoriteIds = await serverCaller.recipe.favoriteIds()
+
+  return <RecipeDetail recipe={recipe} initialFavorite={favoriteIds.includes(recipe.id)} />
 }

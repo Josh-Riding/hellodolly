@@ -6,7 +6,10 @@ import { getServerCaller } from "@/lib/trpc/server"
 
 export default async function RecipesPage() {
   const serverCaller = await getServerCaller()
-  const recipes = await serverCaller.recipe.list()
+  const [recipes, favoriteIds] = await Promise.all([
+    serverCaller.recipe.list(),
+    serverCaller.recipe.favoriteIds(),
+  ])
 
   return (
     <main className="min-h-screen bg-background px-4 py-10 md:px-8">
@@ -27,7 +30,7 @@ export default async function RecipesPage() {
             </Link>
           </Button>
         </div>
-        <RecipesBrowser recipes={recipes} />
+        <RecipesBrowser recipes={recipes} favoriteIds={favoriteIds} />
       </div>
     </main>
   )

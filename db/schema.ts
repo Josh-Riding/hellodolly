@@ -5,6 +5,7 @@ import {
   text,
   jsonb,
   timestamp,
+  primaryKey,
 } from "drizzle-orm/pg-core"
 
 export type Ingredient = { amount: string; ingredient: string }
@@ -49,3 +50,19 @@ export const recipes = pgTable("recipes", {
 
 export type Recipe = typeof recipes.$inferSelect
 export type NewRecipe = typeof recipes.$inferInsert
+
+export const favorites = pgTable(
+  "favorites",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    recipeId: uuid("recipe_id")
+      .notNull()
+      .references(() => recipes.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.recipeId] })]
+)
