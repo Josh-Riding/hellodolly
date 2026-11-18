@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { TagInput } from "@/components/ui/tag-input"
+import { WakeLockButton } from "@/components/wake-lock-button"
 import {
   Select,
   SelectContent,
@@ -219,10 +220,13 @@ export function RecipeDetail({ recipe: initialRecipe }: { recipe: Recipe }) {
                 </div>
               )}
             </div>
-            <Button variant="outline" size="sm" onClick={enterEditMode} className="shrink-0">
-              <Pencil className="size-3.5" />
-              Edit
-            </Button>
+            <div className="flex shrink-0 flex-wrap justify-end gap-2">
+              <WakeLockButton />
+              <Button variant="outline" size="sm" onClick={enterEditMode}>
+                <Pencil className="size-3.5" />
+                Edit
+              </Button>
+            </div>
           </div>
 
           {/* Main card */}
