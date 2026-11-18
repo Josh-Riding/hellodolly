@@ -3,6 +3,7 @@ import { asc, eq, sql } from "drizzle-orm"
 import { router, protectedProcedure } from "../trpc"
 import { db } from "@/db"
 import { recipes } from "@/db/schema"
+import { cleanRecipe } from "@/lib/clean-recipe"
 
 function slugify(title: string): string {
   return title
@@ -12,7 +13,7 @@ function slugify(title: string): string {
 }
 
 const createInput = z.object({
-  title: z.string().min(1),
+  title: z.string().trim().min(1),
   category: z.string().nullable().default(null),
   tags: z.array(z.string()).default([]),
   ingredients: z
@@ -41,7 +42,8 @@ export const recipeRouter = router({
       return recipe ?? null
     }),
 
-  create: protectedProcedure.input(createInput).mutation(async ({ input }) => {
+  create: protectedProcedure.input(createInput).mutation(async ({ input: raw }) => {
+    const input = cleanRecipe(raw)
     const baseSlug = slugify(input.title)
     // ensure uniqueness by appending timestamp if needed
     const existing = await db
@@ -71,7 +73,7 @@ export const recipeRouter = router({
   update: protectedProcedure
     .input(z.object({
       id: z.string().uuid(),
-      title: z.string().min(1),
+      title: z.string().trim().min(1),
       category: z.string().nullable().default(null),
       tags: z.array(z.string()).default([]),
       ingredients: z
@@ -82,7 +84,8 @@ export const recipeRouter = router({
         .default([]),
       steps: z.array(z.string()).default([]),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input: raw }) => {
+      const input = cleanRecipe(raw)
       const [recipe] = await db
         .update(recipes)
         .set({
