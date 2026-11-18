@@ -216,8 +216,8 @@ export function RecipeDetail({
             Recipes
           </Link>
 
-          {/* Title + tags + edit button */}
-          <div className="flex items-start justify-between gap-4">
+          {/* Title + tags + actions (actions stack under the title on phones) */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-3">
               <h1 className="font-heading text-3xl font-semibold tracking-tight">
                 {localRecipe.title}
@@ -239,7 +239,7 @@ export function RecipeDetail({
                 </div>
               )}
             </div>
-            <div className="flex shrink-0 flex-wrap justify-end gap-2">
+            <div className="flex flex-wrap gap-2 sm:shrink-0 sm:justify-end">
               <FavoriteButton recipeId={localRecipe.id} initialFavorite={initialFavorite} />
               <WakeLockButton />
               <Button variant="outline" size="sm" onClick={enterEditMode}>
