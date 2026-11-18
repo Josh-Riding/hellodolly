@@ -11,9 +11,11 @@ npm run dev      # Start dev server at http://localhost:3000
 npm run build    # Production build
 npm run start    # Start production server
 npm run lint     # Run ESLint
+npm test         # Vitest (vitest run)
+npx vitest run lib/__tests__/categories.test.ts   # single test file
 ```
 
-No test framework is configured yet.
+Tests live in `lib/__tests__/`. No vitest config file — defaults apply.
 
 ## Stack
 
@@ -87,11 +89,8 @@ Name new files `NNNN_<slug>.sql` following the existing sequence.
 
 ### Category constants — keep in sync
 
-Recipe categories are defined in **two places** and must stay identical:
-
-- `app/new-recipe/page.tsx` → `MEAL_CATEGORIES` (drives the dropdown)
-- `components/recipes-browser.tsx` → `CATEGORIES` (drives the filter pills; prefixed with `"All"`)
+`MEAL_CATEGORIES` in `lib/categories.ts` is the source of truth (used by the dropdowns in `app/new-recipe/page.tsx` and `components/recipe-detail.tsx`). `components/recipes-browser.tsx` has its own hardcoded `CATEGORIES` list (filter pills, prefixed with `"All"`) that **must be kept identical** by hand.
 
 Current values: `Meal | Dessert | Appetizer | Snack | Salad | Soup | Side | Bread | Drink`
 
-`TAG_TO_CATEGORY` in `new-recipe/page.tsx` maps raw tags that Mistral might return (e.g. `"dinner"`, `"lunch"`) to the canonical category labels. `resolveCategory()` in `recipes-browser.tsx` does the same for display — it also covers legacy DB records that pre-date the normalised labels.
+`TAG_TO_CATEGORY` (also in `lib/categories.ts`) maps raw tags like `"dinner"`/`"lunch"` to canonical labels; it's currently only exercised by tests.
