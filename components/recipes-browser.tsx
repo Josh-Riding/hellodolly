@@ -4,7 +4,7 @@ import { useState, useMemo } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Search } from "lucide-react"
+import { ChefHat, Search } from "lucide-react"
 import type { Recipe } from "@/db/schema"
 const CATEGORIES = [
   "All",
@@ -27,16 +27,27 @@ const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
 export function RecipesBrowser({ recipes }: { recipes: Recipe[] }) {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeCategory, setActiveCategory] = useState<ActiveCategory>("All")
+  const [activeKitchen, setActiveKitchen] = useState<string | null>(null)
+
+  const kitchens = useMemo(
+    () =>
+      Array.from(new Set(recipes.map((r) => r.kitchen).filter((k): k is string => !!k)))
+        .sort((a, b) => a.localeCompare(b)),
+    [recipes]
+  )
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase()
     return recipes.filter((r) => {
-      const matchesSearch = r.title.toLowerCase().includes(q)
+      const matchesSearch =
+        r.title.toLowerCase().includes(q) ||
+        (r.kitchen?.toLowerCase().includes(q) ?? false)
       const categoryMatch =
         activeCategory === "All" || r.category === activeCategory
-      return matchesSearch && categoryMatch
+      const kitchenMatch = activeKitchen === null || r.kitchen === activeKitchen
+      return matchesSearch && categoryMatch && kitchenMatch
     })
-  }, [recipes, searchQuery, activeCategory])
+  }, [recipes, searchQuery, activeCategory, activeKitchen])
 
   const grouped = useMemo(() => {
     const map = new Map<string, Recipe[]>()
@@ -69,7 +80,7 @@ export function RecipesBrowser({ recipes }: { recipes: Recipe[] }) {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search recipes…"
+            placeholder="Search recipes or kitchens…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -89,6 +100,23 @@ export function RecipesBrowser({ recipes }: { recipes: Recipe[] }) {
             </button>
           ))}
         </div>
+
+        {/* Kitchen pills */}
+        {kitchens.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <ChefHat className="size-4 text-muted-foreground" aria-label="Kitchens" />
+            {[null, ...kitchens].map((k) => (
+              <button key={k ?? "all"} onClick={() => setActiveKitchen(k)}>
+                <Badge
+                  variant={activeKitchen === k ? "default" : "outline"}
+                  className="cursor-pointer select-none transition-colors"
+                >
+                  {k ?? "All kitchens"}
+                </Badge>
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Recipe list */}
         {grouped.length === 0 ? (
@@ -119,11 +147,19 @@ export function RecipesBrowser({ recipes }: { recipes: Recipe[] }) {
                         <span className="underline-offset-4 group-hover:underline">
                           {recipe.title}
                         </span>
-                        {recipe.category && (
-                          <Badge variant="ghost" className="text-xs">
-                            {recipe.category}
-                          </Badge>
-                        )}
+                        <span className="flex shrink-0 items-center gap-2">
+                          {recipe.kitchen && (
+                            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                              <ChefHat className="size-3" />
+                              {recipe.kitchen}
+                            </span>
+                          )}
+                          {recipe.category && (
+                            <Badge variant="ghost" className="text-xs">
+                              {recipe.category}
+                            </Badge>
+                          )}
+                        </span>
                       </a>
                     </li>
                   ))}

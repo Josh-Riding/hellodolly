@@ -23,6 +23,7 @@ export function normalizeAmount(amount: string): string {
 
 type RecipeFields = {
   title: string
+  kitchen: string | null
   tags: string[]
   ingredients: IngredientGroup[]
   steps: string[]
@@ -47,6 +48,7 @@ export function cleanRecipe<T extends RecipeFields>(input: T): T {
   return {
     ...input,
     title: clean(input.title),
+    kitchen: clean(input.kitchen ?? "") || null,
     tags: input.tags.map(clean).filter(Boolean),
     ingredients,
     steps: input.steps.map((s) => s.trim()).filter(Boolean),

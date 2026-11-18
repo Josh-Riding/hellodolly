@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ChevronLeft, Pencil, X, Plus, GripVertical, Loader2, Trash2 } from "lucide-react"
+import { ChefHat, ChevronLeft, Pencil, X, Plus, GripVertical, Loader2, Trash2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { TagInput } from "@/components/ui/tag-input"
+import { ComboInput } from "@/components/ui/combo-input"
 import { WakeLockButton } from "@/components/wake-lock-button"
 import {
   Select,
@@ -59,6 +60,7 @@ export function RecipeDetail({ recipe: initialRecipe }: { recipe: Recipe }) {
   // Edit form state
   const [title, setTitle] = useState("")
   const [category, setCategory] = useState("")
+  const [kitchen, setKitchen] = useState("")
   const [tags, setTags] = useState<string[]>([])
   const [ingredientGroups, setIngredientGroups] = useState<IngredientGroup[]>([emptyGroup()])
   const [steps, setSteps] = useState<string[]>([""])
@@ -69,7 +71,7 @@ export function RecipeDetail({ recipe: initialRecipe }: { recipe: Recipe }) {
 
   const dirty =
     isEditing &&
-    JSON.stringify({ title, category, tags, ingredientGroups, steps }) !== snapshot
+    JSON.stringify({ title, category, kitchen, tags, ingredientGroups, steps }) !== snapshot
 
   // Warn on browser tab close / refresh / hard navigation while dirty.
   useEffect(() => {
@@ -83,6 +85,7 @@ export function RecipeDetail({ recipe: initialRecipe }: { recipe: Recipe }) {
   }, [dirty])
 
   const tagListQuery = trpc.recipe.tagList.useQuery()
+  const kitchenListQuery = trpc.recipe.kitchenList.useQuery()
 
   const updateRecipe = trpc.recipe.update.useMutation({
     onSuccess: (updated) => {
@@ -98,6 +101,7 @@ export function RecipeDetail({ recipe: initialRecipe }: { recipe: Recipe }) {
   function enterEditMode() {
     setTitle(localRecipe.title)
     setCategory(localRecipe.category ?? "")
+    setKitchen(localRecipe.kitchen ?? "")
     setTags(localRecipe.tags)
     setIngredientGroups(
       localRecipe.ingredients.length > 0
@@ -109,6 +113,7 @@ export function RecipeDetail({ recipe: initialRecipe }: { recipe: Recipe }) {
     setSnapshot(JSON.stringify({
       title: localRecipe.title,
       category: localRecipe.category ?? "",
+      kitchen: localRecipe.kitchen ?? "",
       tags: localRecipe.tags,
       ingredientGroups:
         localRecipe.ingredients.length > 0 ? localRecipe.ingredients : [emptyGroup()],
@@ -134,6 +139,7 @@ export function RecipeDetail({ recipe: initialRecipe }: { recipe: Recipe }) {
       id: localRecipe.id,
       title: title.trim(),
       category: category || null,
+      kitchen: kitchen.trim() || null,
       tags,
       ingredients: ingredientGroups
         .map((g) => ({ ...g, items: g.items.filter((r) => r.amount.trim() || r.ingredient.trim()) }))
@@ -209,6 +215,12 @@ export function RecipeDetail({ recipe: initialRecipe }: { recipe: Recipe }) {
               <h1 className="font-heading text-3xl font-semibold tracking-tight">
                 {localRecipe.title}
               </h1>
+              {localRecipe.kitchen && (
+                <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <ChefHat className="size-4" />
+                  {localRecipe.kitchen}
+                </p>
+              )}
               {(localRecipe.category || localRecipe.tags.length > 0) && (
                 <div className="flex flex-wrap gap-2">
                   {localRecipe.category && (
@@ -339,6 +351,19 @@ export function RecipeDetail({ recipe: initialRecipe }: { recipe: Recipe }) {
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Kitchen */}
+        <div className="space-y-2">
+          <Label htmlFor="edit-kitchen">Kitchen</Label>
+          <ComboInput
+            id="edit-kitchen"
+            value={kitchen}
+            onChange={setKitchen}
+            suggestions={kitchenListQuery.data ?? []}
+            placeholder="e.g. Grandma Shirleen"
+          />
+          <p className="text-xs text-muted-foreground">Whose kitchen this recipe comes from</p>
         </div>
 
         {/* Tags */}

@@ -31,6 +31,7 @@ export const recipes = pgTable("recipes", {
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
   category: text("category"),
+  kitchen: text("kitchen"),
   tags: text("tags").array().notNull().default([]),
   ingredients: jsonb("ingredients")
     .$type<IngredientGroup[]>()

@@ -15,6 +15,7 @@ function slugify(title: string): string {
 const createInput = z.object({
   title: z.string().trim().min(1),
   category: z.string().nullable().default(null),
+  kitchen: z.string().nullable().default(null),
   tags: z.array(z.string()).default([]),
   ingredients: z
     .array(z.object({
@@ -60,6 +61,7 @@ export const recipeRouter = router({
         title: input.title,
         slug,
         category: input.category,
+        kitchen: input.kitchen,
         tags: input.tags,
         ingredients: input.ingredients,
         steps: input.steps,
@@ -75,6 +77,7 @@ export const recipeRouter = router({
       id: z.string().uuid(),
       title: z.string().trim().min(1),
       category: z.string().nullable().default(null),
+      kitchen: z.string().nullable().default(null),
       tags: z.array(z.string()).default([]),
       ingredients: z
         .array(z.object({
@@ -91,6 +94,7 @@ export const recipeRouter = router({
         .set({
           title: input.title,
           category: input.category,
+          kitchen: input.kitchen,
           tags: input.tags,
           ingredients: input.ingredients,
           steps: input.steps,
@@ -114,5 +118,12 @@ export const recipeRouter = router({
       sql`SELECT DISTINCT unnest(tags) AS tag FROM recipes ORDER BY tag`
     )
     return (rows as unknown as { tag: string }[]).map((r) => r.tag)
+  }),
+
+  kitchenList: protectedProcedure.query(async () => {
+    const rows = await db.execute(
+      sql`SELECT DISTINCT kitchen FROM recipes WHERE kitchen IS NOT NULL ORDER BY kitchen`
+    )
+    return (rows as unknown as { kitchen: string }[]).map((r) => r.kitchen)
   }),
 })
