@@ -87,6 +87,10 @@ psql $DATABASE_URL -f db/migrations/<file>.sql
 
 Name new files `NNNN_<slug>.sql` following the existing sequence.
 
+### Recipe forms — keep New and Edit in sync
+
+`/new-recipe` (`app/new-recipe/page.tsx`) and the edit mode of `components/recipe-detail.tsx` must always offer the same fields and behaviour. Both render the shared sections in `components/recipe-editors.tsx` (`RecipeDetailsFields`, `IngredientsEditor`, `StepsEditor`) — add or change form fields there, not in either page. Mobile is the primary target: those editors carry the keyboard flow (Return → next field / new row, Backspace on empty row removes it; fields use `id="f-<key>"` + `focusField`) and paste-to-split (`lib/parse-paste.ts`).
+
 ### Category constants — keep in sync
 
 `MEAL_CATEGORIES` in `lib/categories.ts` is the source of truth (used by the dropdowns in `app/new-recipe/page.tsx` and `components/recipe-detail.tsx`). `components/recipes-browser.tsx` has its own hardcoded `CATEGORIES` list (filter pills, prefixed with `"All"`) that **must be kept identical** by hand.

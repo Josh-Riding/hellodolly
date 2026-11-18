@@ -5,20 +5,9 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ChevronLeft, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { TagInput } from "@/components/ui/tag-input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { trpc } from "@/lib/trpc/client"
-import { MEAL_CATEGORIES } from "@/lib/categories"
-import { IngredientsEditor, StepsEditor, emptyIngredient, enterMovesTo } from "@/components/recipe-editors"
+import { IngredientsEditor, RecipeDetailsFields, StepsEditor, emptyIngredient } from "@/components/recipe-editors"
 import type { IngredientGroup } from "@/db/schema"
 
 export default function NewRecipePage() {
@@ -26,11 +15,11 @@ export default function NewRecipePage() {
   const createRecipe = trpc.recipe.create.useMutation({
     onSuccess: () => router.push("/recipes"),
   })
-  const tagListQuery = trpc.recipe.tagList.useQuery()
 
   // Manual form
   const [title, setTitle] = useState("")
   const [category, setCategory] = useState("")
+  const [kitchen, setKitchen] = useState("")
   const [tags, setTags] = useState<string[]>([])
   const [ingredientGroups, setIngredientGroups] = useState<IngredientGroup[]>([
     { name: "", items: [emptyIngredient(), emptyIngredient(), emptyIngredient()] },
@@ -42,6 +31,7 @@ export default function NewRecipePage() {
     createRecipe.mutate({
       title: title.trim(),
       category: category || null,
+      kitchen: kitchen.trim() || null,
       tags,
       ingredients: ingredientGroups
         .map((g) => ({ ...g, items: g.items.filter((r) => r.amount.trim() || r.ingredient.trim()) }))
@@ -69,52 +59,17 @@ export default function NewRecipePage() {
 
         {/* ── Manual form ─────────────────────────────────── */}
         <div className="space-y-8">
-          <div className="space-y-2">
-            <Label htmlFor="title">
-              Title <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="title"
-              placeholder="e.g. Jalapeño Poppers"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onKeyDown={enterMovesTo("amount-0-0")}
-              enterKeyHint="next"
-              autoCapitalize="words"
-              className="h-10 text-base"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>
-              Category <span className="text-destructive">*</span>
-            </Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a category…" />
-              </SelectTrigger>
-              <SelectContent>
-                {MEAL_CATEGORIES.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="tags">Tags</Label>
-            <TagInput
-              value={tags}
-              onChange={setTags}
-              suggestions={tagListQuery.data ?? []}
-              placeholder="e.g. Game Day, Spicy"
-            />
-            <p className="text-xs text-muted-foreground">
-              Type and press Enter to add a tag
-            </p>
-          </div>
+          <RecipeDetailsFields
+            title={title}
+            setTitle={setTitle}
+            category={category}
+            setCategory={setCategory}
+            kitchen={kitchen}
+            setKitchen={setKitchen}
+            tags={tags}
+            setTags={setTags}
+            requireCategory
+          />
 
           <Separator />
 

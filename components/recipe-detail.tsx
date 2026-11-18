@@ -6,21 +6,10 @@ import { useRouter } from "next/navigation"
 import { ChefHat, ChevronLeft, Pencil, Loader2, Trash2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { TagInput } from "@/components/ui/tag-input"
-import { ComboInput } from "@/components/ui/combo-input"
 import { WakeLockButton } from "@/components/wake-lock-button"
 import { FavoriteButton } from "@/components/favorite-button"
-import { IngredientsEditor, StepsEditor, emptyGroup, focusField, enterMovesTo } from "@/components/recipe-editors"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { IngredientsEditor, RecipeDetailsFields, StepsEditor, emptyGroup } from "@/components/recipe-editors"
 import {
   Card,
   CardContent,
@@ -47,7 +36,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { trpc } from "@/lib/trpc/client"
-import { MEAL_CATEGORIES } from "@/lib/categories"
 import type { Recipe, IngredientGroup } from "@/db/schema"
 
 
@@ -89,8 +77,6 @@ export function RecipeDetail({
     return () => window.removeEventListener("beforeunload", handler)
   }, [dirty])
 
-  const tagListQuery = trpc.recipe.tagList.useQuery()
-  const kitchenListQuery = trpc.recipe.kitchenList.useQuery()
 
   const updateRecipe = trpc.recipe.update.useMutation({
     onSuccess: (updated) => {
@@ -285,61 +271,16 @@ export function RecipeDetail({
           <div className="w-16" />
         </div>
 
-        {/* Title */}
-        <div className="space-y-2">
-          <Label htmlFor="edit-title">Title</Label>
-          <Input
-            id="edit-title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onKeyDown={enterMovesTo("kitchen")}
-            enterKeyHint="next"
-            autoCapitalize="words"
-            className="h-10 text-base"
-          />
-        </div>
-
-        {/* Category */}
-        <div className="space-y-2">
-          <Label>Category</Label>
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a category…" />
-            </SelectTrigger>
-            <SelectContent>
-              {MEAL_CATEGORIES.map((c) => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Kitchen */}
-        <div className="space-y-2">
-          <Label htmlFor="f-kitchen">Kitchen</Label>
-          <ComboInput
-            id="f-kitchen"
-            onEnter={() => focusField("amount-0-0")}
-            enterKeyHint="next"
-            value={kitchen}
-            onChange={setKitchen}
-            suggestions={kitchenListQuery.data ?? []}
-            placeholder="e.g. Grandma Shirleen"
-          />
-          <p className="text-xs text-muted-foreground">Whose kitchen this recipe comes from</p>
-        </div>
-
-        {/* Tags */}
-        <div className="space-y-2">
-          <Label htmlFor="edit-tags">Tags</Label>
-          <TagInput
-            value={tags}
-            onChange={setTags}
-            suggestions={tagListQuery.data ?? []}
-            placeholder="e.g. Game Day, Spicy"
-          />
-          <p className="text-xs text-muted-foreground">Type and press Enter to add a tag</p>
-        </div>
+        <RecipeDetailsFields
+          title={title}
+          setTitle={setTitle}
+          category={category}
+          setCategory={setCategory}
+          kitchen={kitchen}
+          setKitchen={setKitchen}
+          tags={tags}
+          setTags={setTags}
+        />
 
         <Separator />
 

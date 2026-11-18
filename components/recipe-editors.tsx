@@ -5,11 +5,18 @@ import { flushSync } from "react-dom"
 import { Plus, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { TagInput } from "@/components/ui/tag-input"
+import { ComboInput } from "@/components/ui/combo-input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { trpc } from "@/lib/trpc/client"
+import { MEAL_CATEGORIES } from "@/lib/categories"
 import { splitPastedLines, parseIngredientLine } from "@/lib/parse-paste"
 import type { Ingredient, IngredientGroup } from "@/db/schema"
 
-// Shared ingredient + step editors for /new-recipe and the recipe edit view.
+// Shared form sections for /new-recipe and the recipe edit view — both pages render
+// these, so a field added here shows up in both. Keep it that way.
 //
 // Keyboard flow: Return moves forward (adding a row at the end), Backspace on an empty
 // row removes it. Fields carry id="f-<key>"; focus happens synchronously inside the
@@ -37,6 +44,91 @@ export const enterMovesTo = (nextKey: string) => (e: KeyboardEvent) => {
 // Bigger tap targets on phones, compact from `sm` up.
 const ADD_BUTTON = "h-10 px-3 sm:h-7 sm:px-2.5"
 const REMOVE_BUTTON = "size-10 shrink-0 text-muted-foreground hover:text-destructive sm:size-8"
+
+// ── Title / category / kitchen / tags ──────────────────────
+
+export function RecipeDetailsFields({
+  title,
+  setTitle,
+  category,
+  setCategory,
+  kitchen,
+  setKitchen,
+  tags,
+  setTags,
+  requireCategory = false,
+}: {
+  title: string
+  setTitle: (v: string) => void
+  category: string
+  setCategory: (v: string) => void
+  kitchen: string
+  setKitchen: (v: string) => void
+  tags: string[]
+  setTags: (v: string[]) => void
+  requireCategory?: boolean
+}) {
+  const tagListQuery = trpc.recipe.tagList.useQuery()
+  const kitchenListQuery = trpc.recipe.kitchenList.useQuery()
+  const required = <span className="text-destructive">*</span>
+
+  return (
+    <>
+      <div className="space-y-2">
+        <Label htmlFor="f-title">Title {required}</Label>
+        <Input
+          id="f-title"
+          placeholder="e.g. Jalapeño Poppers"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={enterMovesTo("kitchen")}
+          enterKeyHint="next"
+          autoCapitalize="words"
+          className="h-10 text-base"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Category {requireCategory && required}</Label>
+        <Select value={category} onValueChange={setCategory}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a category…" />
+          </SelectTrigger>
+          <SelectContent>
+            {MEAL_CATEGORIES.map((c) => (
+              <SelectItem key={c} value={c}>{c}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="f-kitchen">Kitchen</Label>
+        <ComboInput
+          id="f-kitchen"
+          onEnter={() => focusField("amount-0-0")}
+          enterKeyHint="next"
+          value={kitchen}
+          onChange={setKitchen}
+          suggestions={kitchenListQuery.data ?? []}
+          placeholder="e.g. Grandma Shirleen"
+        />
+        <p className="text-xs text-muted-foreground">Whose kitchen this recipe comes from</p>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Tags</Label>
+        <TagInput
+          value={tags}
+          onChange={setTags}
+          suggestions={tagListQuery.data ?? []}
+          placeholder="e.g. Game Day, Spicy"
+        />
+        <p className="text-xs text-muted-foreground">Type and press Enter to add a tag</p>
+      </div>
+    </>
+  )
+}
 
 // ── Ingredients ────────────────────────────────────────────
 
