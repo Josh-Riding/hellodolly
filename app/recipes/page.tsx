@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Plus } from "lucide-react"
+import { ChevronLeft, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { RecipesBrowser } from "@/components/recipes-browser"
 import { getServerCaller } from "@/lib/trpc/server"
@@ -14,6 +14,13 @@ export default async function RecipesPage() {
   return (
     <main className="min-h-screen bg-background px-4 py-10 md:px-8">
       <div className="mx-auto max-w-3xl space-y-8">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ChevronLeft className="size-4" />
+          Home
+        </Link>
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="font-heading text-3xl font-semibold tracking-tight">

@@ -128,3 +128,22 @@
     @apply font-sans;
   }
 }
+/* ── Memories: diary / notepaper theme (scoped to /memories) ── */
+@theme inline {
+  --font-hand: var(--font-caveat);
+  --color-paper: oklch(0.985 0.012 85);      /* note sheet */
+  --color-desk: oklch(0.955 0.022 80);       /* page behind the notes */
+  --color-ink: oklch(0.36 0.09 262);         /* blue ballpoint */
+  --color-paper-line: oklch(0.88 0.03 240);  /* ruled lines */
+  --color-paper-margin: oklch(0.8 0.08 20);  /* red margin line */
+  --color-tape: oklch(0.86 0.07 75 / 0.75);
+}
+
+/* Ruled notebook lines every 2rem — pair with leading-8 so text sits on them. */
+@utility paper-ruled {
+  background-image:
+    linear-gradient(to right, transparent 1.75rem, var(--color-paper-margin) 1.75rem, var(--color-paper-margin) calc(1.75rem + 1px), transparent calc(1.75rem + 1px)),
+    linear-gradient(to bottom, transparent calc(2rem - 1px), var(--color-paper-line) calc(2rem - 1px));
+  background-size: 100% 100%, 100% 2rem;
+  background-attachment: local;
+}

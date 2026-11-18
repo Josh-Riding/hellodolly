@@ -66,3 +66,20 @@ export const favorites = pgTable(
   },
   (t) => [primaryKey({ columns: [t.userId, t.recipeId] })]
 )
+
+export const memories = pgTable("memories", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  // Who may edit. Null if their account was deleted (the note stays).
+  userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+  authorName: text("author_name").notNull(),
+  body: text("body").notNull(),
+  recipeId: uuid("recipe_id").references(() => recipes.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+})
+
+export type Memory = typeof memories.$inferSelect

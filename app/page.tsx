@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, Plus } from "lucide-react";
+import { BookOpen, NotebookPen, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SignOutButton } from "@/components/sign-out-button";
 
@@ -37,6 +37,12 @@ export default function Home() {
             <Link href="/new-recipe">
               <Plus />
               Add a Recipe
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/memories">
+              <NotebookPen />
+              Kitchen Memories
             </Link>
           </Button>
         </div>
